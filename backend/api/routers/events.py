@@ -10,6 +10,7 @@ from repositories.interaction_repo import InteractionRepo
 from schemas.event import EventBatch, EventIngestResponse
 from services.cache_service import CacheService
 from services.event_service import EventService
+from tasks.rec_quality_tracker import track as rq_track
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -24,4 +25,14 @@ async def ingest(
     svc = EventService(InteractionRepo(db), CacheService(redis_client))
     events = [e.model_dump() for e in body.events]
     accepted, rejected = await svc.ingest(events)
+    # rec-quality tracker (bucket by event_type; surface extracted from value payload if present)
+    for e in events:
+        surface = None
+        try:
+            if isinstance(e.get("value"), dict):
+                surface = e["value"].get("surface")
+        except Exception:
+            pass
+        await rq_track(db, e.get("event_type", ""), surface or "home")
+    await db.commit()
     return EventIngestResponse(accepted=accepted, rejected=rejected)

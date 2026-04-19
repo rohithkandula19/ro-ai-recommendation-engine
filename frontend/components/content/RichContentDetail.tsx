@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { MatchBadge, Pill } from "./ContentBadge";
 import { SimilarContent } from "./SimilarContent";
 import { ContextualRating } from "@/components/rating/ContextualRating";
+import { ReviewForm } from "./ReviewForm";
 import { Breadcrumb } from "@/components/layout/Breadcrumb";
 import { PosterImage } from "@/components/ui/PosterImage";
 import { YouTubePlayer } from "@/components/player/YouTubePlayer";
@@ -156,8 +157,9 @@ export function RichContentDetail({ id }: { id: string }) {
                     {r.has_spoilers && <span className="inline-block mt-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">contains spoilers</span>}
                     <p className="mt-2 text-sm whitespace-pre-wrap">{r.body}</p>
                   </div>
-                )) : <p className="text-white/50 text-sm">No reviews yet.</p>}
+                )) : <p className="text-white/50 text-sm">No reviews yet — be the first.</p>}
               </div>
+              <ReviewForm contentId={data.id} />
             </div>
           </div>
         </div>
