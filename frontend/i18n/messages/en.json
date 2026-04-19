@@ -1,0 +1,20 @@
+{
+  "nav": {
+    "home": "Home", "movies": "Movies", "series": "Series",
+    "collections": "Collections", "explore": "Explore", "search": "Search",
+    "profile": "Profile", "signin": "Sign in", "signout": "Sign out"
+  },
+  "home": {
+    "welcome": "Welcome", "continue_watching": "Continue Watching",
+    "recommended": "Recommended For You", "trending": "Trending Now",
+    "new_releases": "New Releases"
+  },
+  "chat": {
+    "placeholder": "Ask or speak…", "clear": "Clear",
+    "thinking": "thinking…", "send": "Send"
+  },
+  "errors": {
+    "not_found": "We couldn't find that page",
+    "try_again": "Try again"
+  }
+}

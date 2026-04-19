@@ -1,0 +1,20 @@
+{
+  "nav": {
+    "home": "Inicio", "movies": "Películas", "series": "Series",
+    "collections": "Colecciones", "explore": "Explorar", "search": "Buscar",
+    "profile": "Perfil", "signin": "Iniciar sesión", "signout": "Cerrar sesión"
+  },
+  "home": {
+    "welcome": "Bienvenido", "continue_watching": "Continuar viendo",
+    "recommended": "Recomendado para ti", "trending": "Tendencias",
+    "new_releases": "Nuevos lanzamientos"
+  },
+  "chat": {
+    "placeholder": "Pregunta o habla…", "clear": "Limpiar",
+    "thinking": "pensando…", "send": "Enviar"
+  },
+  "errors": {
+    "not_found": "No pudimos encontrar esa página",
+    "try_again": "Intenta de nuevo"
+  }
+}

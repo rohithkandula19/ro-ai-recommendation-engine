@@ -1,0 +1,6 @@
+name = "ro-image-cdn"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+
+# Deploy: npx wrangler deploy
+# Routes: *.ro-rec.com/img/*
