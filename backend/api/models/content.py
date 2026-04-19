@@ -46,3 +46,5 @@ class Content(Base):
     mood_chill_tense: Mapped[float] = mapped_column(Float, default=0.5, server_default="0.5")
     mood_light_thoughtful: Mapped[float] = mapped_column(Float, default=0.5, server_default="0.5")
     completion_rate: Mapped[float] = mapped_column(Float, default=0.5, server_default="0.5")
+    backdrop_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    youtube_trailer_id: Mapped[str | None] = mapped_column(String(30), nullable=True)

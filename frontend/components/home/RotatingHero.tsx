@@ -28,7 +28,7 @@ export function RotatingHero() {
   return (
     <div className="relative h-[72vh] min-h-[460px] w-full overflow-hidden">
       <div key={featured?.id} className="absolute inset-0 transition-opacity duration-700">
-        <PosterImage src={featured?.thumbnail_url} alt={featured?.title ?? "Featured"} className="h-full w-full" rounded="" />
+        <PosterImage src={featured?.thumbnail_url} alt={featured?.title ?? "Featured"} className="h-full w-full" rounded="" variant="backdrop" />
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black pointer-events-none" />
       <div className="absolute inset-y-0 left-0 w-full md:w-3/5 bg-gradient-to-r from-black/85 via-black/55 to-transparent pointer-events-none" />

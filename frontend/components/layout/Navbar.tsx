@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useAuth } from "@/hooks/useAuth";
 import { MobileNav } from "./MobileNav";
 import { SearchAutocomplete } from "@/components/search/SearchAutocomplete";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 export function Navbar() {
   const user = useAuthStore((s) => s.user);
@@ -34,7 +35,10 @@ export function Navbar() {
           <Link href="/explore" className="hover:text-white/80 text-brand">Explore</Link>
           <Link href="/search" className="hover:text-white/80">Search</Link>
           <Link href="/profiles" className="hover:text-white/80">Profiles</Link>
-          <Link href="/notifications" className="hover:text-white/80">🔔</Link>
+          <NotificationBell />
+          <Link href="/feed" className="hover:text-white/80 text-white/70">Feed</Link>
+          <Link href="/messages" className="hover:text-white/80 text-white/70">DMs</Link>
+          <Link href="/streak" className="hover:text-white/80 text-white/70">Streak</Link>
           <Link href="/leaderboards" className="hover:text-white/80 text-white/50">Boards</Link>
           <Link href="/security" className="hover:text-white/80 text-white/50">Security</Link>
           <Link href="/import" className="hover:text-white/80 text-white/50">Import</Link>

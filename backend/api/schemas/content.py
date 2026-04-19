@@ -46,6 +46,8 @@ class ContentOut(ContentBase):
     popularity_score: float
     is_active: bool
     created_at: datetime
+    backdrop_url: str | None = None
+    youtube_trailer_id: str | None = None
 
 
 class GenreOut(BaseModel):

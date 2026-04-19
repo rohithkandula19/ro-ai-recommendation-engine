@@ -7,6 +7,8 @@ interface Props {
   alt: string;
   className?: string;
   rounded?: string;
+  /** Hero/backdrop uses wider crop. Default = poster. */
+  variant?: "poster" | "backdrop";
 }
 
 function initials(s: string): string {
@@ -19,7 +21,38 @@ function hashHue(s: string): number {
   return Math.abs(h) % 360;
 }
 
-export function PosterImage({ src, alt, className = "", rounded = "rounded-md" }: Props) {
+/** Upgrade TMDB image CDN size. Paths look like:
+ *     https://image.tmdb.org/t/p/w500/xyz.jpg     → swap w500
+ *     https://image.tmdb.org/t/p/original/xyz.jpg → keep original
+ *  TVMaze `original_untouched` images are already max-res; leave alone.
+ */
+function tmdbResize(url: string, size: string): string {
+  return url.replace(/\/t\/p\/w\d+\//, `/t/p/${size}/`).replace(/\/t\/p\/original\//, `/t/p/${size}/`);
+}
+
+function srcSet(url: string, variant: "poster" | "backdrop"): string | undefined {
+  if (!url.includes("image.tmdb.org")) return undefined;
+  if (variant === "backdrop") {
+    return [
+      `${tmdbResize(url, "w780")} 780w`,
+      `${tmdbResize(url, "w1280")} 1280w`,
+      `${tmdbResize(url, "original")} 1920w`,
+    ].join(", ");
+  }
+  return [
+    `${tmdbResize(url, "w342")} 342w`,
+    `${tmdbResize(url, "w500")} 500w`,
+    `${tmdbResize(url, "w780")} 780w`,
+    `${tmdbResize(url, "original")} 1200w`,
+  ].join(", ");
+}
+
+function bestSrc(url: string, variant: "poster" | "backdrop"): string {
+  if (!url.includes("image.tmdb.org")) return url;
+  return variant === "backdrop" ? tmdbResize(url, "w1280") : tmdbResize(url, "w780");
+}
+
+export function PosterImage({ src, alt, className = "", rounded = "rounded-md", variant = "poster" }: Props) {
   const [failed, setFailed] = useState(false);
 
   if (!src || failed) {
@@ -34,10 +67,19 @@ export function PosterImage({ src, alt, className = "", rounded = "rounded-md" }
       </div>
     );
   }
+
+  const hi = bestSrc(src, variant);
+  const set = srcSet(src, variant);
+  const sizes = variant === "backdrop"
+    ? "(min-width: 1280px) 1920px, (min-width: 768px) 1280px, 780px"
+    : "(min-width: 1024px) 342px, (min-width: 640px) 342px, 220px";
+
   return (
     <img
-      src={src} alt={alt} loading="lazy" onError={() => setFailed(true)}
+      src={hi} srcSet={set} sizes={set ? sizes : undefined}
+      alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)}
       className={`${className} ${rounded} object-cover`}
+      style={{ imageRendering: "auto" }}
     />
   );
 }

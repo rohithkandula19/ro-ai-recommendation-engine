@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { api, getAccessToken } from "@/lib/api";
+import { VoiceMic } from "./VoiceMic";
 
 interface Turn { role: "user" | "assistant"; content: string }
 
@@ -149,9 +150,10 @@ export function ChatWidget() {
           </div>
 
           <form onSubmit={(e) => { e.preventDefault(); send(input); }}
-            className="px-3 py-3 border-t border-white/10 flex gap-2">
+            className="px-3 py-3 border-t border-white/10 flex gap-2 items-center">
+            <VoiceMic onTranscript={(t) => setInput((cur) => (cur ? cur + " " : "") + t)} />
             <input value={input} onChange={(e) => setInput(e.target.value)}
-              disabled={streaming} placeholder="Ask about what to watch..."
+              disabled={streaming} placeholder="Ask or 🎤 speak..."
               className="flex-1 rounded-md bg-black/60 px-3 py-2 text-sm ring-1 ring-white/10 focus:ring-white/30 outline-none" />
             <button type="submit" disabled={streaming || !input.trim()}
               className="rounded-md bg-brand px-4 text-sm font-semibold disabled:opacity-40">
