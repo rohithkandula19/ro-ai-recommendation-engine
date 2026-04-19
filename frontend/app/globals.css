@@ -22,3 +22,10 @@ html, body {
 @keyframes shimmer {
   100% { transform: translateX(100%); }
 }
+
+/* Smooth page entrance — kicks in after RoIntro */
+@keyframes ro-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+main { animation: ro-fade-up 400ms ease-out both; }
