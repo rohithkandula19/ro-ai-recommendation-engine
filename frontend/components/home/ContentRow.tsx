@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useRecommendations } from "@/hooks/useRecommendations";
 import { SkeletonRow } from "@/components/ui/SkeletonCard";
 import { ContentCard } from "./ContentCard";
@@ -12,11 +13,26 @@ interface Props {
 
 export function ContentRow({ surface, label, limit = 20 }: Props) {
   const { data, isLoading, isError } = useRecommendations(surface, limit);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  function scrollBy(dir: 1 | -1) {
+    scrollRef.current?.scrollBy({ left: dir * (scrollRef.current.clientWidth * 0.82), behavior: "smooth" });
+  }
+
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const cards = scrollRef.current?.querySelectorAll<HTMLElement>("[data-card]");
+    if (!cards?.length) return;
+    const active = document.activeElement as HTMLElement | null;
+    const idx = Array.from(cards).findIndex((c) => c === active);
+    const next = e.key === "ArrowRight" ? Math.min(cards.length - 1, idx + 1) : Math.max(0, idx - 1);
+    if (next >= 0) { cards[next].focus(); e.preventDefault(); }
+  }
 
   if (isLoading) {
     return (
-      <section className="py-2">
-        <h2 className="px-6 text-lg font-semibold text-white/90">{label}</h2>
+      <section className="section-pad">
+        <h2 className="px-6 row-heading mb-1">{label}</h2>
         <SkeletonRow count={6} />
       </section>
     );
@@ -25,19 +41,28 @@ export function ContentRow({ surface, label, limit = 20 }: Props) {
   if (isError) return null;
   if (!data || data.items.length === 0) {
     return (
-      <section className="py-2">
-        <h2 className="px-6 text-lg font-semibold text-white/90">{label}</h2>
-        <div className="px-6 py-4 text-sm text-white/40">Nothing here yet — keep watching to get picks for this row.</div>
+      <section className="section-pad">
+        <h2 className="px-6 row-heading mb-1">{label}</h2>
+        <div className="px-6 py-4 text-sm text-white/50">Nothing here yet — keep watching to get picks.</div>
       </section>
     );
   }
 
   return (
-    <section className="py-2">
-      <h2 className="px-6 text-lg font-semibold text-white/90">{label}</h2>
-      <div className="flex gap-3 overflow-x-auto px-6 py-4 scrollbar-hide row-gradient">
+    <section className="group/row section-pad relative">
+      <h2 className="px-6 row-heading mb-1">{label}</h2>
+      <button type="button" aria-label="scroll left" onClick={() => scrollBy(-1)}
+        className="hidden md:flex absolute left-0 top-1/2 z-10 h-28 w-12 -translate-y-1/2 items-center justify-center
+                   bg-gradient-to-r from-black via-black/60 to-transparent
+                   text-4xl text-white/80 hover:text-white opacity-0 group-hover/row:opacity-100 transition-opacity">‹</button>
+      <button type="button" aria-label="scroll right" onClick={() => scrollBy(1)}
+        className="hidden md:flex absolute right-0 top-1/2 z-10 h-28 w-12 -translate-y-1/2 items-center justify-center
+                   bg-gradient-to-l from-black via-black/60 to-transparent
+                   text-4xl text-white/80 hover:text-white opacity-0 group-hover/row:opacity-100 transition-opacity">›</button>
+      <div ref={scrollRef} onKeyDown={onKeyDown}
+        className="flex gap-3 overflow-x-auto px-6 pt-3 pb-6 scrollbar-hide row-gradient scroll-smooth">
         {data.items.map((it) => (
-          <ContentCard key={it.id} item={it} />
+          <ContentCard key={it.id} item={it} surface={surface} />
         ))}
       </div>
     </section>

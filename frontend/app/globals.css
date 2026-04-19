@@ -4,13 +4,36 @@
 
 :root {
   color-scheme: dark;
+  --surface-0: #0a0a0b;
+  --surface-1: #141416;
+  --surface-2: #1b1b1e;
+  --text-hi: #f5f5f5;
+  --text-md: #c9c9cf;
+  --text-lo: #8a8a92;
+  --brand: #E50914;
 }
 
 html, body {
-  background-color: #0b0b0b;
-  color: #f5f5f5;
+  background-color: var(--surface-0);
+  color: var(--text-hi);
   min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
+
+/* Better default focus — brand red ring everywhere */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbars — thin + branded */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(229,9,20,0.5); }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -19,13 +42,105 @@ html, body {
   mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
 }
 
-@keyframes shimmer {
-  100% { transform: translateX(100%); }
+/* Text truncation that breaks on words not letters */
+.truncate-word {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  word-break: keep-all;
 }
 
-/* Smooth page entrance — kicks in after RoIntro */
+/* Shimmer — real sweep animation */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-1);
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Smooth page entrance after RoIntro */
 @keyframes ro-fade-up {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 main { animation: ro-fade-up 400ms ease-out both; }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+
+/* Hero parallax — a subtle background drift on scroll */
+@keyframes hero-drift {
+  0% { transform: scale(1.08) translateY(0); }
+  100% { transform: scale(1.08) translateY(-20px); }
+}
+.hero-parallax {
+  animation: hero-drift linear both;
+  animation-timeline: scroll(root);
+  animation-range: 0 100vh;
+}
+
+/* Button system — consistent heights */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 h-10 text-sm font-semibold
+         transition-all select-none whitespace-nowrap ring-offset-2 ring-offset-black;
+}
+.btn-primary { @apply bg-white text-black hover:bg-white/90 active:scale-[0.98]; }
+.btn-secondary { @apply bg-white/15 text-white hover:bg-white/25 backdrop-blur; }
+.btn-ghost { @apply text-white/80 hover:bg-white/10; }
+.btn-brand { @apply bg-brand text-white hover:bg-brand-dark active:scale-[0.98]; }
+.btn-sm { @apply h-8 px-3 text-xs; }
+.btn-lg { @apply h-12 px-6 text-base; }
+
+/* Pill — used for genres + metadata */
+.pill {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-white/10;
+}
+.pill-genre-0 { @apply bg-blue-500/15 text-blue-300 ring-blue-500/20; }
+.pill-genre-1 { @apply bg-purple-500/15 text-purple-300 ring-purple-500/20; }
+.pill-genre-2 { @apply bg-amber-500/15 text-amber-300 ring-amber-500/20; }
+.pill-genre-3 { @apply bg-emerald-500/15 text-emerald-300 ring-emerald-500/20; }
+.pill-genre-4 { @apply bg-rose-500/15 text-rose-300 ring-rose-500/20; }
+.pill-genre-5 { @apply bg-cyan-500/15 text-cyan-300 ring-cyan-500/20; }
+
+/* Match score — better contrast */
+.match-badge {
+  @apply text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-black;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+}
+
+/* Card hover — smooth scale */
+.card-hover {
+  @apply transition-all duration-300 ease-out;
+}
+.card-hover:hover { transform: translateY(-4px) scale(1.03); }
+.card-hover:hover img { filter: brightness(1.1); }
+
+/* Row heading — bigger, Netflix-size */
+.row-heading {
+  @apply text-xl md:text-2xl font-bold tracking-tight text-white;
+}
+
+/* Modal backdrop blur */
+.modal-backdrop {
+  @apply fixed inset-0 z-50 flex items-center justify-center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Link — brand hover */
+a { transition: color 150ms; }
+
+/* Section spacing */
+.section-pad { @apply py-6 md:py-8; }
