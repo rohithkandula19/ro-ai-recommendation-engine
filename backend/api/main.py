@@ -17,7 +17,7 @@ from core.redis import check_redis_health, close_redis
 from core.telemetry import init_sentry, init_telemetry
 from middleware.metrics_middleware import MetricsMiddleware
 from middleware.request_id import RequestIDMiddleware
-from routers import admin, agent, auth, batch, catalog, chat, chat_v2, compliance, content, dna_timeline, events, extras, history, mega, mega2, queues, recommendations, search, unique, users, ws
+from routers import admin, agent, auth, batch, catalog, chat, chat_v2, compliance, content, dna_timeline, events, extras, history, killer, mega, mega2, queues, recommendations, search, unique, users, ws
 
 
 limiter = Limiter(key_func=get_remote_address, default_limits=[f"{settings.RATE_LIMIT_PER_MINUTE}/minute"])
@@ -73,6 +73,7 @@ app.include_router(queues.router)
 app.include_router(dna_timeline.router)
 app.include_router(chat.router)
 app.include_router(chat_v2.router)
+app.include_router(killer.router)
 app.include_router(mega.router)
 app.include_router(mega2.router)
 app.include_router(batch.router)
