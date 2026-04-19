@@ -2,27 +2,34 @@
 
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
-type Variant = "primary" | "secondary" | "ghost";
+type Variant = "primary" | "secondary" | "ghost" | "brand";
+type Size = "sm" | "md" | "lg";
 
-interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface Props extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "size"> {
   variant?: Variant;
+  size?: Size;
 }
 
 const variantClass: Record<Variant, string> = {
-  primary: "bg-white text-black hover:bg-white/90",
-  secondary: "bg-white/20 text-white hover:bg-white/30",
-  ghost: "bg-transparent text-white hover:bg-white/10",
+  primary: "btn btn-primary",
+  secondary: "btn btn-secondary",
+  ghost: "btn btn-ghost",
+  brand: "btn btn-brand",
+};
+
+const sizeClass: Record<Size, string> = {
+  sm: "btn-sm",
+  md: "",
+  lg: "btn-lg",
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
-  { variant = "primary", className = "", children, ...rest }, ref
+  { variant = "primary", size = "md", className = "", children, ...rest }, ref
 ) {
   return (
-    <button
-      ref={ref}
-      className={`inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold transition ${variantClass[variant]} ${className}`}
-      {...rest}
-    >
+    <button ref={ref}
+      className={`${variantClass[variant]} ${sizeClass[size]} ${className}`}
+      {...rest}>
       {children}
     </button>
   );
