@@ -1,0 +1,38 @@
+# Auto-HTTPS reverse proxy for RO Rec Engine.
+# Set ACME_EMAIL + DOMAIN env vars, run `docker compose -f infra/docker-compose.prod.yml up -d caddy`.
+#
+# Replace {$DOMAIN} with your real domain (e.g. ro-rec.com).
+
+{
+	email {$ACME_EMAIL}
+	# in dev: use staging CA. Comment out for prod.
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+{$DOMAIN:localhost} {
+	encode gzip zstd
+
+	# Frontend (SSR)
+	handle_path /api/* {
+		reverse_proxy api:8000
+	}
+	handle_path /ml/* {
+		reverse_proxy ml_service:8001
+	}
+	reverse_proxy frontend:3000
+
+	# Security headers
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(self), geolocation=()"
+	}
+}
+
+# API subdomain (optional)
+api.{$DOMAIN:localhost} {
+	encode gzip zstd
+	reverse_proxy api:8000
+}

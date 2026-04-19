@@ -1,0 +1,21 @@
+{
+  "name": "@ro/client",
+  "version": "0.1.0",
+  "description": "Official TypeScript SDK for the RO AI Recommendation Engine",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/test/*.js"
+  },
+  "keywords": ["recommendation", "ai", "ml", "movies", "ro"],
+  "license": "MIT",
+  "author": "Rohith Kandula",
+  "repository": "github.com/rohithkandula/ro-ai-recommendation-engine",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0"
+  }
+}

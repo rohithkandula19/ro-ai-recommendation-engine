@@ -26,6 +26,8 @@ yarn-error.log*
 .env.local
 .env.*.local
 !.env.example
+secrets/*.txt
+!secrets/README.md
 
 # IDE
 .vscode/

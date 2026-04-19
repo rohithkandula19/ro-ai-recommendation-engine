@@ -22,9 +22,8 @@ def main():
             SELECT id, title FROM content WHERE type='series' LIMIT 80
         """)).mappings().all()
     inserted = 0
-    with httpx.Client() as client, eng.begin() as c:
+    with httpx.Client() as client:
         for r in rows:
-            # lookup show via tvmaze by name
             try:
                 rr = client.get("https://api.tvmaze.com/search/shows",
                                 params={"q": r["title"]}, timeout=8)
@@ -35,22 +34,27 @@ def main():
                 er = client.get(f"https://api.tvmaze.com/shows/{show_id}/episodes", timeout=10)
                 if er.status_code != 200:
                     continue
-                for ep in er.json():
-                    c.execute(text("""
-                        INSERT INTO episodes (content_id, season, number, title, description,
-                                              duration_seconds, aired_at, thumbnail_url)
-                        VALUES (:cid, :s, :n, :t, :d, :dur, :a, :th)
-                        ON CONFLICT (content_id, season, number) DO NOTHING
-                    """), {
-                        "cid": str(r["id"]), "s": ep.get("season", 0), "n": ep.get("number", 0),
-                        "t": ep.get("name", "")[:255],
-                        "d": (ep.get("summary") or "").replace("<p>", "").replace("</p>", "")[:2000],
-                        "dur": (ep.get("runtime") or 0) * 60,
-                        "a": ep.get("airdate"),
-                        "th": (ep.get("image") or {}).get("medium", "")[:500],
-                    })
-                    inserted += 1
-                time.sleep(0.2)
+                # commit per-show so a bad row doesn't poison the whole run
+                with eng.begin() as c:
+                    for ep in er.json():
+                        try:
+                            c.execute(text("""
+                                INSERT INTO episodes (content_id, season, number, title, description,
+                                                      duration_seconds, aired_at, thumbnail_url)
+                                VALUES (:cid, :s, :n, :t, :d, :dur, :a, :th)
+                                ON CONFLICT (content_id, season, number) DO NOTHING
+                            """), {
+                                "cid": str(r["id"]), "s": ep.get("season", 0), "n": ep.get("number", 0),
+                                "t": (ep.get("name") or "")[:255],
+                                "d": ((ep.get("summary") or "").replace("<p>", "").replace("</p>", ""))[:2000],
+                                "dur": (ep.get("runtime") or 0) * 60,
+                                "a": ep.get("airdate"),
+                                "th": ((ep.get("image") or {}).get("medium", "") or "")[:500],
+                            })
+                            inserted += 1
+                        except Exception:
+                            continue
+                time.sleep(0.15)
             except Exception as e:
                 logger.warning(f"{r['title']}: {e}")
     logger.success(f"Inserted {inserted} episodes")
