@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+.next/
+out/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ML artifacts
+models/*.pkl
+models/*.pt
+models/*.bin
+models/faiss/*.index
+data/*.parquet
+data/*.csv
+!data/.gitkeep
+
+# Logs
+logs/
+*.log
+
+# Docker
+.dockerignore.local
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Build
+dist/
+build/

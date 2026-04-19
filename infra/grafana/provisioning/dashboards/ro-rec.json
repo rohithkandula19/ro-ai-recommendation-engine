@@ -1,0 +1,30 @@
+{
+  "title": "RO Rec Engine — Overview",
+  "schemaVersion": 38,
+  "version": 1,
+  "panels": [
+    {
+      "type": "stat", "title": "API req/s", "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+      "targets": [{"expr": "sum(rate(request_count[1m]))", "legendFormat": "req/s"}]
+    },
+    {
+      "type": "timeseries", "title": "P95 API latency", "gridPos": {"x": 6, "y": 0, "w": 12, "h": 4},
+      "targets": [{"expr": "histogram_quantile(0.95, sum(rate(request_latency_seconds_bucket[5m])) by (le, path))"}]
+    },
+    {
+      "type": "stat", "title": "Rec cache hit rate", "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+      "targets": [{"expr": "sum(rate(recommendation_cache_hits[5m])) / sum(rate(request_count{path=~\"/recommendations/.*\"}[5m]))"}]
+    },
+    {
+      "type": "timeseries", "title": "ML service latency P95", "gridPos": {"x": 0, "y": 4, "w": 12, "h": 6},
+      "targets": [{"expr": "histogram_quantile(0.95, sum(rate(ml_latency_seconds_bucket[5m])) by (le, surface))"}]
+    },
+    {
+      "type": "timeseries", "title": "Errors by status", "gridPos": {"x": 12, "y": 4, "w": 12, "h": 6},
+      "targets": [{"expr": "sum by (status) (rate(request_count{status=~\"5..|4..\"}[5m]))"}]
+    }
+  ],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "refresh": "10s"
+}

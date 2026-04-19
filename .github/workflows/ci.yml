@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: recuser
+          POSTGRES_PASSWORD: recpass
+          POSTGRES_DB: recengine
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U recuser"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install deps
+        working-directory: backend/api
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run tests with coverage
+        working-directory: backend/api
+        env:
+          DATABASE_URL: postgresql+asyncpg://recuser:recpass@localhost:5432/recengine
+          SYNC_DATABASE_URL: postgresql://recuser:recpass@localhost:5432/recengine
+          REDIS_URL: redis://localhost:6379/0
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          SECRET_KEY: ci-test-secret-32-characters-minimum
+        run: pytest --cov=. --cov-report=term-missing --cov-fail-under=40
+
+  ml-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install ML deps
+        working-directory: backend/ml_service
+        run: |
+          pip install --upgrade pip
+          pip install numpy scipy scikit-learn lightgbm pytest pytest-asyncio pydantic pydantic-settings loguru redis httpx faiss-cpu implicit
+      - name: Run ML tests
+        working-directory: backend/ml_service
+        run: pytest tests/ -q
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Install deps
+        working-directory: frontend
+        run: npm install
+      - name: Lint + typecheck
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run typecheck
+      - name: Test
+        working-directory: frontend
+        run: npm test -- --passWithNoTests
+
+  build:
+    needs: [backend-test, ml-test, frontend-test]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to ECR
+        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build images
+        run: |
+          docker build -t rec-api ./backend/api
+          docker build -t rec-ml ./backend/ml_service
+          docker build -t rec-events ./backend/event_service
+          docker build -t rec-frontend ./frontend

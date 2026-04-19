@@ -1,0 +1,49 @@
+version: "3.9"
+
+# docker compose -f infra/docker-compose.yml -f infra/docker-compose.prod.yml up -d
+
+services:
+  api:
+    build:
+      context: ../backend/api
+      dockerfile: Dockerfile.prod
+    deploy:
+      replicas: 3
+      resources:
+        limits: { cpus: "1.5", memory: 1024M }
+        reservations: { cpus: "0.5", memory: 512M }
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health/ready || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    environment:
+      LOG_LEVEL: INFO
+
+  ml_service:
+    deploy:
+      replicas: 2
+      resources:
+        limits: { cpus: "2", memory: 2048M }
+    restart: always
+
+  event_service:
+    deploy:
+      replicas: 2
+    restart: always
+
+  frontend:
+    deploy:
+      replicas: 2
+    restart: always
+
+  postgres:
+    deploy:
+      resources:
+        limits: { cpus: "2", memory: 2048M }
+
+  redis:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 768M }

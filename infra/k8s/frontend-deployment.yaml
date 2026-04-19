@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: ro-rec-engine
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: frontend } }
+  template:
+    metadata: { labels: { app: frontend } }
+    spec:
+      containers:
+        - name: frontend
+          image: YOUR_ECR/ro-rec-engine-frontend:latest
+          ports: [{ containerPort: 3000 }]
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://api.rec-engine.example.com"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: ro-rec-engine
+spec:
+  selector: { app: frontend }
+  ports: [{ port: 80, targetPort: 3000 }]
+  type: LoadBalancer

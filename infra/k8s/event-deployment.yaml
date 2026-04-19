@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-service
+  namespace: ro-rec-engine
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: event-service } }
+  template:
+    metadata:
+      labels: { app: event-service }
+    spec:
+      containers:
+        - name: event-service
+          image: YOUR_ECR/ro-rec-engine-events:latest
+          envFrom:
+            - configMapRef: { name: rec-engine-config }
+            - secretRef: { name: rec-engine-secrets }
+          resources:
+            requests: { cpu: "200m", memory: "512Mi" }
+            limits: { cpu: "800m", memory: "1024Mi" }

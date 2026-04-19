@@ -1,0 +1,157 @@
+version: "3.9"
+
+networks:
+  recnet:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:
+  chdata:
+  kafkadata:
+  grafdata:
+
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-recuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-recpass}
+      POSTGRES_DB: ${POSTGRES_DB:-recengine}
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [recnet]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-recuser}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    ports: ["6381:6379"]
+    volumes:
+      - redisdata:/data
+    networks: [recnet]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks: [recnet]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on: [zookeeper]
+    ports: ["9092:9092", "29092:29092"]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafkadata:/var/lib/kafka/data
+    networks: [recnet]
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:23
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    ports: ["8123:8123", "9000:9000"]
+    volumes:
+      - chdata:/var/lib/clickhouse
+    networks: [recnet]
+
+  api:
+    build:
+      context: ../backend/api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ../.env
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      kafka: { condition: service_started }
+    ports: ["8000:8000"]
+    networks: [recnet]
+
+  ml_service:
+    build:
+      context: ../backend/ml_service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ../.env
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports: ["8001:8001"]
+    volumes:
+      - ../backend/ml_service/artifacts:/app/artifacts
+    networks: [recnet]
+
+  event_service:
+    build:
+      context: ../backend/event_service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ../.env
+    depends_on:
+      kafka: { condition: service_started }
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    networks: [recnet]
+
+  celery_worker:
+    build:
+      context: ../backend/api
+      dockerfile: Dockerfile
+    command: ["celery", "-A", "tasks.celery_app", "worker", "--loglevel=info"]
+    env_file: ../.env
+    depends_on:
+      redis: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+    networks: [recnet]
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ../.env
+    ports: ["3000:3000"]
+    depends_on: [api]
+    networks: [recnet]
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9090:9090"]
+    networks: [recnet]
+
+  grafana:
+    image: grafana/grafana:latest
+    ports: ["3002:3000"]
+    volumes:
+      - grafdata:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    networks: [recnet]
+    depends_on: [prometheus]
