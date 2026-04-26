@@ -1,0 +1,25 @@
+{
+  "hosting": {
+    "public": "frontend/out",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/browse/!{index}", "destination": "/browse/index.html" },
+      { "source": "/watch/!{index}", "destination": "/watch/index.html" },
+      { "source": "/messages/!{index}", "destination": "/messages/index.html" },
+      { "source": "/collections/!{index}", "destination": "/collections/index.html" },
+      { "source": "/legal/!{privacy,terms,cookies,attributions}", "destination": "/legal/privacy.html" },
+      { "source": "/u/**", "destination": "/u/index@example.com.html" },
+      { "source": "/watch-party/**", "destination": "/watch-party/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "**/_next/static/**",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      },
+      {
+        "source": "**/*.html",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      }
+    ]
+  }
+}

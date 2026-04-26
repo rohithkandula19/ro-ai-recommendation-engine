@@ -1,13 +1,9 @@
-"use client";
+import WatchRedirect from "./redirect";
 
-import { useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+export function generateStaticParams() {
+  return [{ id: "index" }];
+}
 
-export default function WatchPage() {
-  const params = useParams<{ id: string }>();
-  const router = useRouter();
-  useEffect(() => {
-    if (params?.id) router.replace(`/browse/${params.id}`);
-  }, [params?.id, router]);
-  return null;
+export default function WatchPage({ params }: { params: { id: string } }) {
+  return <WatchRedirect id={params.id} />;
 }
