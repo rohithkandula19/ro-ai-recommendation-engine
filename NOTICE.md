@@ -3,6 +3,16 @@
 RO AI Recommendation Engine is MIT-licensed original work by Rohith Kandula.
 This file attributes third-party data, assets, and APIs used by the project.
 
+## What RO is (and is not)
+
+**RO is a recommendation engine and a where-to-watch discovery layer.**
+RO **does not** stream, host, download, cache, or redistribute licensed film
+or television content. Playback buttons in the UI embed YouTube trailers
+(via the official iframe API) and deep-link to third-party services
+(Netflix, Prime Video, Max, Disney+, Apple TV, Peacock, Hulu, etc.) where
+the user holds their own subscription or rental rights. RO has no business
+relationship with, and is not endorsed by, any of those services.
+
 ## Content metadata & images
 
 Movie/TV metadata (titles, descriptions, cast, posters, ratings) is pulled
@@ -36,6 +46,13 @@ at runtime from the following services and **is not owned by this project**:
 - License: [YouTube Terms of Service](https://www.youtube.com/t/terms)
 - Usage: iframe embeds are permitted. Do not download or redistribute video.
 
+### JustWatch (provider availability, via TMDB /watch/providers)
+- Source: https://www.justwatch.com/
+- Served through TMDB's `/watch/providers` endpoint — TMDB aggregates JustWatch
+  data and requires the following notice:
+- **Required attribution:** "Streaming availability data by JustWatch."
+- Usage: Display only. Deep-links open the provider's own site.
+
 ## Open-source libraries
 
 Major dependencies are each under permissive licenses (MIT/BSD/Apache-2.0):
@@ -58,9 +75,15 @@ Full license texts: run `pip show <pkg>` / `npm info <pkg> license`.
 
 ## Trademarks
 
-- "Netflix" is a trademark of Netflix, Inc. This project is **unaffiliated with
-  and not endorsed by Netflix**. The term "Netflix-style" is used descriptively
-  to indicate UI patterns similar to theirs (rows, hover-expand, dark theme).
+- "Netflix", "Prime Video", "Max", "HBO", "Disney+", "Apple TV", "Peacock",
+  "Hulu", "Paramount+", and all other streaming-service names are trademarks
+  of their respective owners. This project is **unaffiliated with and not
+  endorsed by any of them**.
+- RO references these services only to tell users where licensed content can
+  be watched (nominative fair use). No service logos are stored in this repo;
+  logos are served at request-time from TMDB/JustWatch.
+- The term "Netflix-style" is used descriptively for UI patterns
+  (rows, hover-expand, dark theme). Layouts are not copyrightable.
 - The "RO" mark + animated intro are original work by this project.
 
 ## Seed data

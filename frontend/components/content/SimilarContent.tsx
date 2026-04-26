@@ -5,12 +5,27 @@ import { api } from "@/lib/api";
 import type { ContentItem } from "@/types";
 import { ContentCard } from "@/components/home/ContentCard";
 
-export function SimilarContent({ contentId }: { contentId: string }) {
+export function SimilarContent({ contentId, title }: { contentId: string; title?: string }) {
   const { data } = useQuery<{ items: ContentItem[] }>({
-    queryKey: ["similar", contentId],
+    queryKey: ["similar", contentId, title],
     queryFn: async () => {
       try {
-        const r = await api.get(`/recommendations/because_you_watched`, { params: { limit: 12 } });
+        if (title) {
+          const r = await api.post("/search/semantic", { query: title, limit: 12 });
+          const items: ContentItem[] = (r.data.results ?? [])
+            .filter((x: any) => x.id !== contentId)
+            .map((x: any) => ({
+              id: x.id,
+              title: x.title,
+              type: x.type,
+              thumbnail_url: x.thumbnail_url,
+              match_score: 0,
+              reason_text: "Similar title",
+              genre_ids: [],
+            }));
+          return { items };
+        }
+        const r = await api.get("/recommendations/because_you_watched", { params: { limit: 12 } });
         return { items: r.data.items };
       } catch {
         return { items: [] };

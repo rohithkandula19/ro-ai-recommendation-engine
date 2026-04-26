@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { RotatingHero as HeroSection } from "@/components/home/RotatingHero";
 import { ContentRow } from "@/components/home/ContentRow";
 import { CollectionRow } from "@/components/home/CollectionRow";
+import { ServiceFilterBar } from "@/components/home/ServiceFilterBar";
 import { useAuth } from "@/hooks/useAuth";
 
 function readPersistedUser(): boolean {
@@ -38,6 +39,7 @@ export default function BrowsePage() {
   return (
     <div>
       <HeroSection />
+      <ServiceFilterBar />
       <div className="space-y-4 pb-12">
         <ContentRow surface="continue_watching" label="Continue Watching" />
         <ContentRow surface="home" label="Recommended For You" />

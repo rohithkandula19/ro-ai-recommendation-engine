@@ -17,6 +17,8 @@ def get_producer() -> Producer:
             "acks": "1",
             "linger.ms": 10,
             "compression.type": "snappy",
+            "log_level": 0,
+            "error_cb": lambda err: None,
         })
     return _producer
 

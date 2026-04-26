@@ -126,6 +126,7 @@ export function ChatWidget() {
         if (Array.isArray(data.actions)) {
           const newMap: Record<string, string> = {};
           for (const a of data.actions) newMap[a.label.replace(/^(Play|Add .*? to List|Watch|Rate|View details) ?/, "").trim()] = a.content_id;
+          setTitleMap((prev) => ({ ...prev, ...newMap }));
         }
         if (ttsEnabled && data.reply) speak(data.reply);
       } else {
@@ -182,6 +183,7 @@ export function ChatWidget() {
               </div>
             </div>
             <div className="flex gap-2 items-center">
+              <Link href="/chat" className="text-[11px] text-white/60 hover:text-brand" title="Expand">⤢</Link>
               <button onClick={() => setTtsEnabled((v) => !v)} aria-label="tts"
                 className={`text-xs ${ttsEnabled ? "text-brand" : "text-white/40"}`}>🔊</button>
               <button onClick={clear} className="text-xs text-white/50 hover:text-white">Clear</button>

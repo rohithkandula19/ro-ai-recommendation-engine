@@ -9,6 +9,7 @@ import { TasteTimeline } from "@/components/dna/TasteTimeline";
 import { QueuesPanel } from "@/components/queues/QueuesPanel";
 import { Button } from "@/components/ui/Button";
 import { useTasteDNA } from "@/hooks/useUniqueFeatures";
+import { SubscriptionPicker } from "@/components/content/SubscriptionPicker";
 
 interface HistoryItem {
   content_id: string;
@@ -77,6 +78,14 @@ export function ProfilePage() {
 
       <section>
         <QueuesPanel />
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold mb-1">My streaming services</h2>
+        <p className="text-sm text-white/60 mb-4">
+          Pick what you subscribe to. RO will filter recommendations so you only see what you can actually watch.
+        </p>
+        <SubscriptionPicker />
       </section>
 
       <section>

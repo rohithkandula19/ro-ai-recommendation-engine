@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
@@ -16,6 +16,22 @@ export function RotatingHero() {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const { track } = useEventTracker();
+  const backdropRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const el = backdropRef.current;
+        if (!el) return;
+        const y = Math.min(window.scrollY, 600);
+        el.style.transform = `translate3d(0, ${y * 0.2}px, 0) scale(${1.08 + y * 0.00015})`;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
+  }, []);
 
   useEffect(() => {
     if (paused || items.length < 2) return;
@@ -33,9 +49,9 @@ export function RotatingHero() {
   return (
     <div className="relative h-[78vh] min-h-[520px] w-full overflow-hidden -mt-[60px] md:-mt-[68px]"
          onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-      {/* Backdrop with parallax zoom */}
-      <div key={featured?.id}
-           className="absolute inset-0 scale-[1.08] animate-[ro-fade-up_700ms_ease-out] hero-parallax">
+      {/* Backdrop with parallax zoom (scroll-linked) */}
+      <div ref={backdropRef} key={featured?.id}
+           className="absolute inset-0 scale-[1.08] animate-[ro-fade-up_700ms_ease-out] will-change-transform">
         <PosterImage
           src={full?.backdrop_url ?? featured?.thumbnail_url}
           alt={featured?.title ?? "Featured"}
@@ -70,13 +86,13 @@ export function RotatingHero() {
         </p>
         <div className="mt-7 flex gap-3 flex-wrap">
           {featured && (
-            <Link href={`/watch/${featured.id}`} onClick={() => track("play", featured.id)}>
+            <Link href={`/browse/${featured.id}`} onClick={() => track("watch_intent", featured.id)}>
               <Button size="lg">▶ Play</Button>
             </Link>
           )}
           {featured && (
             <Link href={`/browse/${featured.id}`}>
-              <Button variant="secondary" size="lg">ⓘ More info</Button>
+              <Button variant="secondary" size="lg">ⓘ More Info</Button>
             </Link>
           )}
         </div>

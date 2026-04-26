@@ -7,6 +7,8 @@ from .recommendation import RecommendationSnapshot
 from .queue import WatchQueue, QueueItem
 from .dna_snapshot import UserDNASnapshot
 from .chat import ChatFeedback, UserChatProfile
+from .availability import ContentAvailability
+from .subscription import UserSubscription
 
 __all__ = [
     "User",
@@ -23,4 +25,6 @@ __all__ = [
     "UserDNASnapshot",
     "ChatFeedback",
     "UserChatProfile",
+    "ContentAvailability",
+    "UserSubscription",
 ]

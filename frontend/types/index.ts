@@ -22,6 +22,8 @@ export interface Content {
   description: string | null;
   thumbnail_url: string | null;
   trailer_url: string | null;
+  backdrop_url: string | null;
+  youtube_trailer_id: string | null;
   cast_names: string[];
   director: string | null;
   popularity_score: number;
@@ -70,7 +72,8 @@ export interface SearchResult {
 
 export type EventType =
   | "click" | "play" | "pause" | "progress" | "complete"
-  | "like" | "dislike" | "search" | "add_to_list" | "rate" | "skip";
+  | "like" | "dislike" | "search" | "add_to_list" | "rate" | "skip"
+  | "watch_intent" | "provider_click";
 
 export interface TrackedEvent {
   user_id: string;
