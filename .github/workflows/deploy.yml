@@ -8,19 +8,24 @@ on:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && secrets.AWS_ACCESS_KEY_ID != '' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    env:
+      HAS_AWS: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
     steps:
       - uses: actions/checkout@v4
       - name: Configure AWS creds
+        if: ${{ env.HAS_AWS == 'true' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Update kubeconfig
+        if: ${{ env.HAS_AWS == 'true' }}
         run: aws eks update-kubeconfig --name ro-rec-engine --region us-east-1
       - name: Apply manifests
+        if: ${{ env.HAS_AWS == 'true' }}
         run: |
           kubectl apply -f infra/k8s/namespace.yaml
           kubectl apply -f infra/k8s/configmap.yaml
@@ -31,6 +36,7 @@ jobs:
           kubectl apply -f infra/k8s/frontend-deployment.yaml
           kubectl apply -f infra/k8s/ingress.yaml
       - name: Wait for rollouts
+        if: ${{ env.HAS_AWS == 'true' }}
         run: |
           kubectl -n ro-rec-engine rollout status deployment/api --timeout=5m
           kubectl -n ro-rec-engine rollout status deployment/ml-service --timeout=5m
