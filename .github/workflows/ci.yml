@@ -1,8 +1,11 @@
 name: CI
 
 on:
-  push: { branches: [main] }
-  pull_request: { branches: [main] }
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   backend-test:
@@ -14,7 +17,8 @@ jobs:
           POSTGRES_USER: recuser
           POSTGRES_PASSWORD: recpass
           POSTGRES_DB: recengine
-        ports: ["5432:5432"]
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U recuser"
           --health-interval 5s
@@ -22,29 +26,34 @@ jobs:
           --health-retries 10
       redis:
         image: redis:7-alpine
-        ports: ["6379:6379"]
+        ports:
+          - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://recuser:recpass@localhost:5432/recengine
+      SYNC_DATABASE_URL: postgresql://recuser:recpass@localhost:5432/recengine
+      REDIS_URL: redis://localhost:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      SECRET_KEY: ci-test-secret-32-characters-minimum
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
+        with:
+          python-version: "3.11"
       - name: Install deps
         working-directory: backend/api
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Run migrations
+        working-directory: backend/api
+        run: alembic upgrade head
       - name: Run tests with coverage
         working-directory: backend/api
-        env:
-          DATABASE_URL: postgresql+asyncpg://recuser:recpass@localhost:5432/recengine
-          SYNC_DATABASE_URL: postgresql://recuser:recpass@localhost:5432/recengine
-          REDIS_URL: redis://localhost:6379/0
-          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-          SECRET_KEY: ci-test-secret-32-characters-minimum
         run: pytest --cov=. --cov-report=term-missing --cov-fail-under=40
 
   ml-test:
@@ -52,7 +61,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
+        with:
+          python-version: "3.11"
       - name: Install ML deps
         working-directory: backend/ml_service
         run: |
@@ -67,7 +77,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "20" }
+        with:
+          node-version: "20"
       - name: Install deps
         working-directory: frontend
         run: npm install
@@ -82,16 +93,25 @@ jobs:
 
   build:
     needs: [backend-test, ml-test, frontend-test]
-    if: github.ref == 'refs/heads/main'
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    env:
+      HAS_AWS: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
+      - name: Configure AWS credentials
+        if: ${{ env.HAS_AWS == 'true' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
       - name: Login to ECR
-        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+        if: ${{ env.HAS_AWS == 'true' }}
         uses: aws-actions/amazon-ecr-login@v2
       - name: Build images
         run: |
