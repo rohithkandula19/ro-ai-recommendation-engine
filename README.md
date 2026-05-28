@@ -1,3 +1,4 @@
+> **⚠️ All Rights Reserved.** This repository is published for viewing and portfolio purposes only. The code is **not** open source — reuse, redistribution, modification, or derivative works are not permitted without written permission. See [LICENSE](./LICENSE).
 <div align="center">
 
 <img src="https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js" />
