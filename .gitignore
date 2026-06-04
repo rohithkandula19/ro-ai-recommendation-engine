@@ -60,3 +60,4 @@ logs/
 # Build
 dist/
 build/
+.firebase/
