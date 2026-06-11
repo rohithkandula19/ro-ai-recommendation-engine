@@ -1,4 +1,4 @@
-> **⚠️ All Rights Reserved.** This repository is published for viewing and portfolio purposes only. The code is **not** open source — reuse, redistribution, modification, or derivative works are not permitted without written permission. See [LICENSE](./LICENSE).
+> **⚠️ All Rights Reserved.** This repository is published for viewing and portfolio purposes only. The code is **not** open source: reuse, redistribution, modification, or derivative works are not permitted without written permission. See [LICENSE](./LICENSE).
 <div align="center">
 
 <img src="https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js" />
@@ -12,7 +12,7 @@
 
 # RO RecEngine
 
-**A full-stack, production-shaped AI recommendation system — Netflix without the subscription.**
+**A full-stack, production-shaped AI recommendation system: Netflix without the subscription.**
 
 *Collaborative filtering · Learning-to-rank · Semantic search · Real-time event streaming · AI chat assistant*
 
@@ -24,11 +24,11 @@
 
 ## What is RO RecEngine?
 
-RO RecEngine is a Netflix-clone recommendation platform built from first principles — not a tutorial project, not a Jupyter notebook demo. It's a multi-service system that combines **collaborative filtering (ALS)**, **content embeddings (sentence-transformers + FAISS)**, **a LightGBM learning-to-rank pipeline**, and **real-time Kafka event streaming** behind a FastAPI gateway with a Next.js 14 frontend styled after Netflix.
+RO RecEngine is a Netflix-clone recommendation platform built from first principles: not a tutorial project, not a Jupyter notebook demo. It's a multi-service system that combines **collaborative filtering (ALS)**, **content embeddings (sentence-transformers + FAISS)**, **a LightGBM learning-to-rank pipeline**, and **real-time Kafka event streaming** behind a FastAPI gateway with a Next.js 14 frontend styled after Netflix.
 
 Every recommendation shown in the UI is the result of a real ML pipeline: candidates are generated from multiple signals, reranked with a trained LTR model, diversity-reranked via MMR, and served with a latency budget. The system also ships an **AI chat assistant** ("Ask RO") powered by Claude that understands your taste and recommends films conversationally.
 
-The goal: take every layer of a real recommendation system — data ingestion, model training, serving, event streaming, observability — and build it end to end.
+The goal: take every layer of a real recommendation system (data ingestion, model training, serving, event streaming, observability) and build it end to end.
 
 ---
 
@@ -94,10 +94,10 @@ The goal: take every layer of a real recommendation system — data ingestion, m
 | **ML** | PyTorch 2 · implicit (ALS) · sentence-transformers · FAISS · LightGBM · scikit-learn |
 | **Data** | PostgreSQL 15 (partitioned interactions table) · Redis 7 (cache + ZSET + SET) |
 | **Streaming** | Apache Kafka (confluent-kafka) · ZooKeeper |
-| **AI** | Claude claude-sonnet-4-6 — chat, recommendations, slash commands, streaming |
+| **AI** | Claude claude-sonnet-4-6: chat, recommendations, slash commands, streaming |
 | **Queue** | Celery + Redis broker |
 | **Observability** | Prometheus · Grafana · custom request / latency / cache-hit metrics |
-| **CI/CD** | GitHub Actions — test → build → ECR push → `kubectl apply` |
+| **CI/CD** | GitHub Actions: test → build → ECR push → `kubectl apply` |
 | **Infra** | Terraform (VPC + EKS + RDS + ElastiCache + MSK) · Kubernetes (HPA + Ingress) |
 | **Container** | Docker Compose (local) · multi-stage Docker builds (prod) |
 
@@ -142,8 +142,8 @@ Candidate Generation (parallel)
 
 ## Engineering Challenges
 
-### 1. Kafka broker crash on restart — ZooKeeper stale ephemeral node
-Kafka stores its broker ID as an ephemeral node in ZooKeeper. When the container crashed mid-session, the node persisted until ZooKeeper's session timeout expired. The next startup threw `NodeExistsException` and Kafka never came up. The fix was two-fold: delete the stale volume (`infra_kafkadata`), and add a ZooKeeper healthcheck using `nc -z localhost 2181` — the `ruok` command was disabled in this ZooKeeper version. Kafka's `depends_on` now waits for `service_healthy` before starting.
+### 1. Kafka broker crash on restart · ZooKeeper stale ephemeral node
+Kafka stores its broker ID as an ephemeral node in ZooKeeper. When the container crashed mid-session, the node persisted until ZooKeeper's session timeout expired. The next startup threw `NodeExistsException` and Kafka never came up. The fix was two-fold: delete the stale volume (`infra_kafkadata`), and add a ZooKeeper healthcheck using `nc -z localhost 2181`: the `ruok` command was disabled in this ZooKeeper version. Kafka's `depends_on` now waits for `service_healthy` before starting.
 
 ### 2. 428 poster images stuck on picsum.photos
 The original seed script ran before the TMDB API key was configured, so every title got a `picsum.photos` placeholder. Wrote a backfill script that queries all content with picsum thumbnails, searches TMDB by title + year, and updates `thumbnail_url`, `backdrop_url`, and `youtube_trailer_id` in one pass. Result: 428/428 matched, 515 items now have real TMDB images.
@@ -151,7 +151,7 @@ The original seed script ran before the TMDB API key was configured, so every ti
 ### 3. 742 YouTube trailer IDs from zero
 The seed script hardcoded a Big Buck Bunny placeholder trailer URL for all 891 titles. Wrote a second backfill that NULLed out the old URL column and ran every title through TMDB's videos endpoint to find real YouTube trailer IDs. 742/891 titles now have real trailers; the rest gracefully hide the "Play Trailer" button.
 
-### 4. LTR training stability — FAISS + LightGBM pipeline
+### 4. LTR training stability · FAISS + LightGBM pipeline
 Early training attempts produced NaN loss. Root cause: interaction weights included zero-division when normalizing sparse ALS output. Fixed by clipping item factors to a minimum L2-norm before cosine scoring. The final ranker trains on 80 query groups (one per user sample), 30 features, lambdarank objective. NDCG@10 ≈ 0.72 on held-out set.
 
 ### 5. Semantic search latency budget
@@ -179,7 +179,7 @@ docker compose -f infra/docker-compose.yml up --build
 # 3. Run migrations (new terminal)
 docker compose -f infra/docker-compose.yml exec api alembic upgrade head
 
-# 4. Seed data — 1000 titles, 500 users, 50k events, trains ALS, builds FAISS
+# 4. Seed data - 1000 titles, 500 users, 50k events, trains ALS, builds FAISS
 pip install -r scripts/requirements.txt
 SYNC_DATABASE_URL=postgresql://recuser:recpass@localhost:5432/recengine \
   python scripts/seed.py
@@ -229,12 +229,12 @@ GET   /metrics                      →  Prometheus scrape
 
 ```
 ro-ai-recommendation-engine/
-├── frontend/                  Next.js 14 app — pages, components, hooks, stores
+├── frontend/                  Next.js 14 app - pages, components, hooks, stores
 │   ├── app/                   App Router pages (browse, watch, chat, profile, admin)
 │   ├── components/            UI components (cards, navbar, chat, content, layout)
 │   └── hooks/ lib/ types/     React Query hooks, API client, TypeScript types
 ├── backend/
-│   ├── api/                   FastAPI — auth, content, recommendations, events, admin
+│   ├── api/                   FastAPI - auth, content, recommendations, events, admin
 │   │   ├── routers/           Route handlers
 │   │   ├── models/            SQLAlchemy ORM models
 │   │   ├── ml/                Recommendation orchestration layer
@@ -282,6 +282,6 @@ Built by **Rohith Kandula**
 
 [GitHub](https://github.com/rohithkandula19) · [LinkedIn](https://linkedin.com/in/rohithkandula)
 
-*Every recommendation is real ML — no hardcoded results.*
+*Every recommendation is real ML, no hardcoded results.*
 
 </div>
